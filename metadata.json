@@ -1,0 +1,12 @@
+{
+    "uuid": "Kolour-Groups-Windows@federovs",
+    "name": "Enhanced Grayscale Window",
+    "description": "GNOME Shell extension with multiple grayscale levels and Opera-like window grouping",
+    "shell-version": [
+        "43", "44", "45", "46", "47", "48"
+    ],
+    "url": "https://github.com/federovs/Kolour-Groups-Windows",
+    "version": 1,
+    "settings-schema": "org.gnome.shell.extensions.Kolour-Groups-Windows@federovs",
+    "gettext-domain": "Kolour-Groups-Windows"
+}
