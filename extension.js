@@ -66,20 +66,16 @@ export default class KolourGroupsExtension {
         ];
 
         bindings.forEach(binding => {
-            try {
-                Main.wm.addKeybinding(
-                    binding.name,
-                    {
-                        get_default: () => this._getDefaultBinding(binding.name)
-                    },
-                    Meta.KeyBindingFlags.NONE,
-                    Shell.ActionMode.NORMAL,
-                    binding.callback
-                );
-                this._keybindings.push(binding.name);
-            } catch (e) {
-                log(`Error adding keybinding ${binding.name}: ${e}`);
-            }
+            Main.wm.addKeybinding(
+                binding.name,
+                {
+                    get_default: () => this._getDefaultBinding(binding.name)
+                },
+                Meta.KeyBindingFlags.NONE,
+                Shell.ActionMode.NORMAL,
+                binding.callback
+            );
+            this._keybindings.push(binding.name);
         });
     }
 
@@ -125,8 +121,6 @@ export default class KolourGroupsExtension {
                    metaWindow.get_window_type() === Meta.WindowType.NORMAL &&
                    !metaWindow.minimized;
         });
-        
-        log(`[Kolour Groups] Showing ${windows.length} windows in group view`);
     }
 
     _toggleGlobalGrayscale() {
@@ -159,10 +153,7 @@ export default class KolourGroupsExtension {
 
     disable() {
         this._keybindings.forEach(name => {
-            try {
-                Main.wm.removeKeybinding(name);
-            } catch (e) {
-            }
+            Main.wm.removeKeybinding(name);
         });
         this._keybindings = [];
 
