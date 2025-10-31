@@ -26,6 +26,7 @@ export default class KolourGroupsExtension {
     constructor(metadata) {
         this.metadata = metadata;
         this._keybindings = [];
+        this._windowGroupUI = null;
     }
 
     enable() {
@@ -72,7 +73,7 @@ export default class KolourGroupsExtension {
                     get_default: () => this._getDefaultBinding(binding.name)
                 },
                 Meta.KeyBindingFlags.NONE,
-                Shell.ActionMode.NORMAL,
+                Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
                 binding.callback
             );
             this._keybindings.push(binding.name);
@@ -93,9 +94,10 @@ export default class KolourGroupsExtension {
     }
 
     _applyGrayscale(level) {
-        const focusedWindow = global.get_window_actors().find(actor => 
-            actor.get_meta_window()?.has_focus()
-        );
+        const focusedWindow = global.get_window_actors().find(actor => {
+            const metaWindow = actor.get_meta_window();
+            return metaWindow && metaWindow.has_focus();
+        });
         
         if (focusedWindow) {
             focusedWindow.remove_effect_by_name('grayscale-effect');
@@ -115,12 +117,74 @@ export default class KolourGroupsExtension {
     }
 
     _showWindowGrouper() {
+        if (this._windowGroupUI) {
+            this._hideWindowGrouper();
+            return;
+        }
+
+        const workspace = global.workspace_manager.get_active_workspace();
         const windows = global.get_window_actors().filter(actor => {
             const metaWindow = actor.get_meta_window();
             return metaWindow && 
                    metaWindow.get_window_type() === Meta.WindowType.NORMAL &&
-                   !metaWindow.minimized;
+                   !metaWindow.minimized &&
+                   metaWindow.get_workspace() === workspace;
         });
+
+        if (windows.length === 0) return;
+
+        this._createWindowGroupUI(windows);
+    }
+
+    _createWindowGroupUI(windows) {
+        const container = new St.BoxLayout({
+            vertical: true,
+            style_class: 'window-group-container'
+        });
+
+        const title = new St.Label({
+            text: `Windows (${windows.length})`,
+            style_class: 'window-group-title'
+        });
+        container.add_child(title);
+
+        const scrollBox = new St.BoxLayout({
+            vertical: true,
+            style_class: 'window-group-scroll'
+        });
+
+        windows.forEach((actor, index) => {
+            const metaWindow = actor.get_meta_window();
+            const title = metaWindow.get_title() || 'Untitled';
+            const button = new St.Button({
+                style_class: 'window-group-button',
+                label: `${index + 1}. ${title}`,
+                can_focus: true
+            });
+            
+            button.connect('clicked', () => {
+                metaWindow.activate(global.get_current_time());
+                this._hideWindowGrouper();
+            });
+            
+            scrollBox.add_child(button);
+        });
+
+        container.add_child(scrollBox);
+        Main.layoutManager.addChrome(container);
+        container.add_style_class_name('window-group-visible');
+
+        this._windowGroupUI = container;
+
+        global.stage.set_key_focus(container);
+    }
+
+    _hideWindowGrouper() {
+        if (this._windowGroupUI) {
+            this._windowGroupUI.add_style_class_name('window-group-fade-out');
+            this._windowGroupUI.destroy();
+            this._windowGroupUI = null;
+        }
     }
 
     _toggleGlobalGrayscale() {
@@ -162,5 +226,10 @@ export default class KolourGroupsExtension {
         });
 
         Main.uiGroup.remove_effect_by_name('global-grayscale-effect');
+        
+        if (this._windowGroupUI) {
+            this._windowGroupUI.destroy();
+            this._windowGroupUI = null;
+        }
     }
 }
