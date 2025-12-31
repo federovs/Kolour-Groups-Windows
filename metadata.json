@@ -1,8 +1,8 @@
 {
     "uuid": "kolour-groups-windows@federovs",
     "name": "Kolour Groups Windows",
-    "description": "Window management with color groups and grayscale effects",
+    "description": "Window management with grayscale effects and window grouping - Ctrl+Alt+K shortcuts",
     "shell-version": ["45", "46", "47", "48", "49"],
-    "version": 7,
-    "url": "https://github.com/federovs/Kolour-Groups-Windows"
+    "url": "https://github.com/federovs/Kolour-Groups-Windows",
+    "version": 11
 }
